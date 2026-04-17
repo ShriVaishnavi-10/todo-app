@@ -12,48 +12,73 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user }) {
-      if (!user?.email) return false;
-      console.log("User",user)
-      // 1. Check if user already exists
-      const { data: existingUser } = await supabaseServer
-        .from("users")
-        .select("*")
-        .eq("email", user.email)
-        .single();
-      console.log("Existing user",existingUser)
-      // 2. If user does NOT exist → create new user
-      if (!existingUser) {
-        await supabaseServer.from("users").insert({
-          name: user.name,
-          email: user.email,
-          avatar_url: user.image
-        });
-      }
-
-      return true; // allow login
-    },
-        async jwt({ token }) {
-      // Fetch the user's Supabase profile using email
-      if (token.email) {
-        const { data: dbUser } = await supabaseServer
+      try {
+        if (!user?.email) return false;
+        console.log("SignIn attempt for:", user.email);
+        
+        // 1. Check if user already exists
+        const { data: existingUser, error: selectError } = await supabaseServer
           .from("users")
           .select("*")
-          .eq("email", token.email)
+          .eq("email", user.email)
           .single();
-
-        if (dbUser) {
-          token.id = dbUser.id; // SUPABASE UUID ✔
+        
+        if (selectError && selectError.code !== 'PGRST116') {
+          console.error("Supabase select error:", selectError);
+          throw selectError;
         }
-      }
 
+        console.log("Existing user status:", existingUser ? "Found" : "Not Found");
+        
+        // 2. If user does NOT exist → create new user
+        if (!existingUser) {
+          const { error: insertError } = await supabaseServer.from("users").insert({
+            name: user.name,
+            email: user.email,
+            avatar_url: user.image
+          });
+          
+          if (insertError) {
+            console.error("Supabase insert error:", insertError);
+            throw insertError;
+          }
+          console.log("New user created in Supabase");
+        }
+
+        return true; // allow login
+      } catch (error) {
+        console.error("Error in signIn callback:", error);
+        return false;
+      }
+    },
+
+    async jwt({ token }) {
+      try {
+        // Fetch the user's Supabase profile using email
+        if (token.email) {
+          const { data: dbUser, error } = await supabaseServer
+            .from("users")
+            .select("*")
+            .eq("email", token.email)
+            .single();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error("JWT callback Supabase error:", error);
+          }
+
+          if (dbUser) {
+            token.id = dbUser.id; // SUPABASE UUID ✔
+          }
+        }
+      } catch (error) {
+        console.error("Error in jwt callback:", error);
+      }
       return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-       // session.user.email=token.email as string;
-        //session.user.avatar_url=token.picture as string;
       }
       return session;
     },
