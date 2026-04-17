@@ -1,5 +1,9 @@
+"use client";
+
+import React from "react";
 import TodoItem from './TodoItem';
 import AddTodo from './AddTodo';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Todo {
   id: string;
@@ -17,29 +21,44 @@ interface TodoListProps {
 
 export default function TodoList({ todos, onToggle, onDelete, onAdd, onEdit }: TodoListProps) {
   return (
-    <div className="max-w-2xl mx-auto p-6 ">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">My Todo List</h1>
-        <p className="text-gray-600">Stay organized and get things done</p>
+    <div className="p-6 md:p-10">
+      <div className="mb-10">
+         <AddTodo onAdd={onAdd} />
       </div>
-      <AddTodo onAdd={onAdd} />
-      <div className="space-y-3 mt-6">
-        {todos.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📝</div>
-            <p className="text-gray-500 text-lg">No todos yet. Add one above!</p>
-          </div>
-        ) : (
-          todos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onToggle={onToggle}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          ))
-        )}
+      
+      <div className="space-y-4">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {todos.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="py-20 text-center border-2 border-dashed border-border rounded-3xl"
+            >
+              <div className="text-4xl mb-6 opacity-20">📂</div>
+              <h2 className="text-lg font-bold text-foreground mb-1">Workspace Clear</h2>
+              <p className="text-xs text-muted font-medium">Define your next objective above to begin.</p>
+            </motion.div>
+          ) : (
+            todos.map((todo) => (
+              <motion.div
+                key={todo.id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                <TodoItem
+                  todo={todo}
+                  onToggle={onToggle}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                />
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

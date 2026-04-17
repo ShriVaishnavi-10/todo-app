@@ -1,5 +1,8 @@
+"use client";
+
+import React, { useState } from 'react';
 import { Check, Trash2, Edit3, Save, X } from 'lucide-react';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Todo {
   id: string;
@@ -36,57 +39,68 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleEdit();
-    } else if (e.key === 'Escape') {
-      handleCancel();
-    }
+    if (e.key === 'Enter') handleEdit();
+    else if (e.key === 'Escape') handleCancel();
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 group">
+    <div className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 ${
+      todo.is_done 
+        ? 'bg-background border-border opacity-50' 
+        : 'bg-surface border-border hover:border-accent hover:shadow-xl hover:shadow-accent/5'
+    }`}>
       <button
         onClick={() => onToggle(todo.id)}
-        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+        className={`relative w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
           todo.is_done
-            ? 'bg-green-500 border-green-500 hover:bg-green-600'
-            : 'border-gray-300 hover:border-green-400'
+            ? 'bg-accent border-accent'
+            : 'bg-transparent border-muted hover:border-accent'
         }`}
       >
-        {todo.is_done && <Check size={14} className="text-white" />}
+        <AnimatePresence>
+          {todo.is_done && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+            >
+              <Check size={14} className="text-white stroke-[3]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </button>
+
       {isEditing ? (
         <input
           type="text"
           value={editText}
           onChange={(e) => setEditText(e.target.value)}
           onKeyDown={handleKeyPress}
-          className="flex-1 text-lg border-none outline-none bg-transparent text-gray-800"
+          className="flex-1 text-base bg-background border border-accent rounded-lg px-3 py-1 text-foreground focus:outline-none"
           autoFocus
         />
       ) : (
         <span
-          className={`flex-1 text-lg transition-all duration-200 ${
-            todo.is_done
-              ? 'line-through text-gray-400'
-              : 'text-gray-800 group-hover:text-gray-900'
+          className={`flex-1 text-base font-semibold transition-all duration-300 ${
+            todo.is_done ? 'line-through text-muted' : 'text-foreground'
           }`}
         >
           {todo.title}
         </span>
       )}
-      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+
+      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
           <>
             <button
               onClick={handleEdit}
-              className="text-green-500 hover:text-green-700 p-2 rounded-lg hover:bg-green-50"
+              className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors"
             >
               <Save size={18} />
             </button>
             <button
               onClick={handleCancel}
-              className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50"
+              className="p-2 text-muted hover:bg-muted/10 rounded-lg transition-colors"
             >
               <X size={18} />
             </button>
@@ -94,14 +108,14 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50"
+            className="p-2 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
           >
             <Edit3 size={18} />
           </button>
         )}
         <button
           onClick={() => onDelete(todo.id)}
-          className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50"
+          className="p-2 text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
         >
           <Trash2 size={18} />
         </button>

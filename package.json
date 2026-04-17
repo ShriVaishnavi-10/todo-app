@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "momentum-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.87.0",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.556.0",
     "next": "16.0.7",
     "next-auth": "^4.24.13",
+    "next-themes": "^0.4.6",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
