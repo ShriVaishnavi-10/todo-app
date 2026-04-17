@@ -3,7 +3,7 @@
 import React from "react";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { ShieldCheck } from "lucide-react";
+import Logo from '@/components/Logo';
 
 export default function Login() {
   return (
@@ -21,9 +21,7 @@ export default function Login() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="stealth-card p-10 flex flex-col items-center rounded-[2.5rem] border-accent/20"
         >
-          <div className="w-20 h-20 bg-accent rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-accent/30 rotate-3">
-             <ShieldCheck className="text-white w-10 h-10" />
-          </div>
+          <Logo className="w-20 h-20 text-accent mb-8" />
 
           <div className="text-center mb-10">
             <h1 className="text-2xl font-semibold text-foreground tracking-tight mb-2">Momentum Portal</h1>

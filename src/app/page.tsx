@@ -9,6 +9,8 @@ import TodoList from '../components/TodoList';
 import { supabase } from '@/lib/supabase';
 import { LogOut, Sun, Moon, Layout as LayoutIcon, User, Layers, Sparkles } from 'lucide-react';
 
+import Logo from '@/components/Logo';
+
 interface Todo {
   id: string;
   title: string;
@@ -97,8 +99,8 @@ export default function HomePage() {
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700" />
           
           <div className="relative z-10 flex items-center gap-4">
-            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center shadow-xl shadow-accent/20">
-              <Sparkles className="text-white w-7 h-7" />
+            <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center shadow-xl shadow-accent/20 border border-accent/10">
+              <Logo className="w-8 h-8 text-accent" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">Momentum</h1>
