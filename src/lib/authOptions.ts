@@ -10,12 +10,16 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true,
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async signIn({ user }) {
       try {
-        if (!user?.email) return false;
-        console.log("SignIn attempt for:", user.email);
+        if (!user?.email) {
+          console.error("❌ Signin failed: No user email provided by Google.");
+          return false;
+        }
+        
+        console.log("🔍 [Auth] Attempting sign-in for:", user.email);
         
         // 1. Check if user already exists
         const { data: existingUser, error: selectError } = await supabaseServer
@@ -25,12 +29,11 @@ export const authOptions: NextAuthOptions = {
           .single();
         
         if (selectError && selectError.code !== 'PGRST116') {
-          console.error("Supabase select error:", selectError);
-          throw selectError;
+          console.error("❌ [Auth] Supabase User Check failed:", selectError.message);
+          console.error("💡 TIP: Make sure your 'users' table exists in Supabase!");
+          return false; // Stop the login if we can't check for the user
         }
 
-        console.log("Existing user status:", existingUser ? "Found" : "Not Found");
-        
         // 2. If user does NOT exist → create new user
         if (!existingUser) {
           const { error: insertError } = await supabaseServer.from("users").insert({
@@ -40,15 +43,17 @@ export const authOptions: NextAuthOptions = {
           });
           
           if (insertError) {
-            console.error("Supabase insert error:", insertError);
-            throw insertError;
+            console.error("❌ [Auth] Supabase User Creation failed:", insertError.message);
+            return false;
           }
-          console.log("New user created in Supabase");
+          console.log("✅ [Auth] New user registered in Supabase");
+        } else {
+          console.log("✅ [Auth] Existing user identified");
         }
 
-        return true; // allow login
+        return true; 
       } catch (error) {
-        console.error("Error in signIn callback:", error);
+        console.error("❌ [Critical] Error in signIn callback:", error);
         return false;
       }
     },
