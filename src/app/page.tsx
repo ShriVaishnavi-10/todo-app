@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,7 @@ export default function HomePage() {
 
   useEffect(() => setMounted(true), []);
 
-  const fetchTodos = async () => {
+  const fetchTodos = useCallback(async () => {
     if (!session?.user?.id) return;
     setLoading(true);
     const { data, error } = await supabase
@@ -39,13 +39,13 @@ export default function HomePage() {
       .order('created_at', { ascending: false });
     if (!error && data) setTodos(data.map(d => ({ id: d.id, title: d.title, is_done: d.is_done })));
     setLoading(false);
-  };
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) router.push('/login');
     else fetchTodos();
-  }, [session, status, router]);
+  }, [session, status, router, fetchTodos]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,28 +55,28 @@ export default function HomePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const addTodo = async (text: string) => {
+  const addTodo = useCallback(async (text: string) => {
     if (!session?.user?.id) return;
     const { data, error } = await supabase.from('todos').insert({ user_id: session.user.id, title: text, is_done: false }).select();
     if (!error && data) setTodos(prev => [data[0], ...prev]);
-  };
+  }, [session?.user?.id]);
 
-  const toggleTodo = async (id: string) => {
+  const toggleTodo = useCallback(async (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
     await supabase.from('todos').update({ is_done: !todo.is_done }).eq('id', id);
     setTodos(prev => prev.map(t => t.id === id ? { ...t, is_done: !t.is_done } : t));
-  };
+  }, [todos]);
 
-  const deleteTodo = async (id: string) => {
+  const deleteTodo = useCallback(async (id: string) => {
     await supabase.from('todos').delete().eq('id', id);
     setTodos(prev => prev.filter(t => t.id !== id));
-  };
+  }, []);
 
-  const editTodo = async (id: string, newText: string) => {
+  const editTodo = useCallback(async (id: string, newText: string) => {
     await supabase.from('todos').update({ title: newText }).eq('id', id);
     setTodos(prev => prev.map(t => t.id === id ? { ...t, title: newText } : t));
-  };
+  }, []);
 
   if (!mounted || status === 'loading' || loading) {
     return (
@@ -94,9 +94,11 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen bg-background p-6 md:p-12 overflow-x-hidden transition-all duration-700">
       <div className="relative z-10 max-w-5xl mx-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 p-8 rounded-[2rem] bg-accent/5 border border-accent/20 backdrop-blur-xl relative overflow-hidden group">
-          {/* Animated Glow Background for Header */}
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700" />
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 p-8 rounded-[2rem] bg-accent/5 border border-accent/20 backdrop-blur-xl relative group z-40">
+          {/* Background Glow Clipping Layer */}
+          <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700" />
+          </div>
           
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center shadow-xl shadow-accent/20 border border-accent/10">
@@ -150,7 +152,7 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-3 w-64 stealth-card shadow-2xl overflow-hidden p-3 z-50 rounded-3xl"
+                    className="absolute right-0 mt-3 w-64 stealth-card shadow-2xl p-3 z-50 rounded-3xl"
                   >
                     <div className="px-4 py-3 bg-accent/5 rounded-2xl border border-accent/10 mb-2 flex items-center gap-3">
                        <User size={16} className="text-accent" />

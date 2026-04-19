@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Check, Trash2, Edit3, Save, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,7 +17,7 @@ interface TodoItemProps {
   onEdit: (id: string, newText: string) => void;
 }
 
-export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+const TodoItem = memo(({ todo, onToggle, onDelete, onEdit }: TodoItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
 
@@ -44,10 +44,10 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
   };
 
   return (
-    <div className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 ${
+    <div className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 will-change-transform ${
       todo.is_done 
         ? 'bg-background border-border opacity-50' 
-        : 'bg-surface border-border hover:border-accent hover:shadow-xl hover:shadow-accent/5'
+        : 'bg-surface/50 border-border hover:border-accent hover:shadow-xl hover:shadow-accent/5'
     }`}>
       <button
         onClick={() => onToggle(todo.id)}
@@ -122,4 +122,8 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
       </div>
     </div>
   );
-}
+});
+
+TodoItem.displayName = 'TodoItem';
+
+export default TodoItem;

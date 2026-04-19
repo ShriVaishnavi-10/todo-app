@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import TodoItem from './TodoItem';
 import AddTodo from './AddTodo';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,7 @@ interface TodoListProps {
   onEdit: (id: string, newText: string) => void;
 }
 
-export default function TodoList({ todos, onToggle, onDelete, onAdd, onEdit }: TodoListProps) {
+const TodoList = memo(({ todos, onToggle, onDelete, onAdd, onEdit }: TodoListProps) => {
   return (
     <div className="p-6 md:p-10">
       <div className="mb-10">
@@ -62,4 +62,8 @@ export default function TodoList({ todos, onToggle, onDelete, onAdd, onEdit }: T
       </div>
     </div>
   );
-}
+});
+
+TodoList.displayName = 'TodoList';
+
+export default TodoList;
